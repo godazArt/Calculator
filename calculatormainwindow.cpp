@@ -12,6 +12,7 @@ CalculatorMainWindow::CalculatorMainWindow(QWidget *parent)
     : QWidget(parent)
 {
     zeros = true;
+    sqrtPressed = false;
     resNumber = 0;
     standartVals();
     savedNumber = 0;
@@ -143,7 +144,18 @@ void CalculatorMainWindow::binOperations(QPushButton *button)
 {
     if(countOfEvents > 2)
     {
-        histDisplay->insert(QString::number(dispNumber) + button->text());
+        if(sqrtPressed)
+        {
+            histDisplay->insert(button->text());
+            sqrtPressed = false;
+        }
+        else
+        {
+            if(dispNumber >= 0)
+                histDisplay->insert(display->text() + button->text());
+            else
+                histDisplay->insert('(' + display->text() + ')' + button->text());
+        }
         countOfEvents = 2;
         resNumber = (this->*operation_ptr)();
         standartVals();
@@ -153,7 +165,18 @@ void CalculatorMainWindow::binOperations(QPushButton *button)
 
     if(countOfEvents % 2 != 0)
     {
-        histDisplay->insert(QString::number(dispNumber) + button->text());
+        if(sqrtPressed)
+        {
+            histDisplay->insert(button->text());
+            sqrtPressed = false;
+        }
+        else
+        {
+            if(dispNumber >= 0)
+                histDisplay->insert(display->text() + button->text());
+            else
+                histDisplay->insert('(' + display->text() + ')' + button->text());
+        }
         countOfEvents++;
         resNumber = dispNumber;
         standartVals();
@@ -200,13 +223,17 @@ void CalculatorMainWindow::unOperations(QPushButton *button)
         break;
     default:
         if(button->text() == "√")
+        {
+            sqrtPressed = true;
             funcSqrt();
+        }
         break;
     }
 }
 
 void CalculatorMainWindow::funcSqrt()
 {
+        histDisplay->insert("√(" +QString::number(dispNumber) +')');
     savedNumber = sqrt(display->text().toInt());
     dispNumber = 0;
     display->clear();
@@ -258,7 +285,7 @@ void CalculatorMainWindow::funcEqual()
     countOfEvents = 2;
     display->clear();
     histDisplay->clear();
-    histDisplay->insert(QString::number(resNumber));
+    display->insert(QString::number(resNumber));
 }
 
 double CalculatorMainWindow::op_plus()

@@ -33,6 +33,7 @@ private:
     int numOfDigits;
     int degree;
     int countOfEvents;
+    bool sqrtPressed;
     bool dotPressed;
     bool zeros;
     void standartVals();
