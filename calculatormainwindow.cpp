@@ -118,26 +118,31 @@ void CalculatorMainWindow::slotEngine()
 void CalculatorMainWindow::digitFunc(int num)
 {
     dispNumber = dispNumber * 10 +  num;
-    display->clear();
-    display->insert(QString::number(dispNumber));
 }
 
 void CalculatorMainWindow::dotDigitFunc(double num)
 {
     dispNumber = dispNumber +  num / degree;
     degree *=10;
-    display->clear();
-    display->insert(QString::number(dispNumber));
 }
 
 void CalculatorMainWindow::digitAnalys(QPushButton *button)
 {
     if(countOfEvents % 2 == 0)
         countOfEvents++;
+    int temp = 1;
+    if(dispNumber < 0)
+    {
+        temp = -1;
+        dispNumber *= temp;
+    }
     if(dotPressed)
         dotDigitFunc(button->text().toInt());
     else
         digitFunc(button->text().toInt());
+    dispNumber *= temp;
+    display->clear();
+    display->insert(QString::number(dispNumber));
 }
 
 void CalculatorMainWindow::binOperations(QPushButton *button)
