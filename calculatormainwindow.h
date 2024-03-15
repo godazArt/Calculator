@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QObject>
 #include <vector>
+#include <stack>
 
 class QSignalMapper;
 class QPushButton;
@@ -30,36 +31,40 @@ private:
         unOp = 2
     };
     std::vector< void (CalculatorMainWindow::*)(QPushButton*)> funcs;
+    std::stack<double> nums;
     int numOfDigits;
     int degree;
-    int countOfEvents;
-    bool sqrtPressed;
-    bool dotPressed;
     bool zeros;
-    void standartVals();
+    bool isUnOpPrev;
+    bool dotPressed;
+    bool isButtonPressed;
+
     void funcSqrt();
     void funcEqual();
     void funcErase();
-    void funcClear();
+    void funcClear();    
+    void clearSteck();
+    void unOpCleaner();
+    void placeWidgets();
+    void standartVals();
     void funcPlusMinus();
     void configButtons();
-    void startNewNum();
-    double resNumber;
-    double dispNumber;
-    double savedNumber;
+    void createWidgets();
+    void createButtons();
+    void digitFunc(int num, int temp);
+    void digitAnalys(QPushButton *button);
+    void solveExample(QPushButton *button);
+    void unOperations(QPushButton *button);
+    void moveToNextNum(QPushButton *button);
+    void binOperations(QPushButton *button);
+    void dotDigitFunc(double num, int temp);
+
     double op_plus();
     double op_mult();
     double op_devot();
     double op_minus();
     double (CalculatorMainWindow::*operation_ptr)();
-    void createWidgets();
-    void createButtons();
-    void placeWidgets();
-    void digitFunc(int num);
-    void dotDigitFunc(double num);
-    void digitAnalys(QPushButton *button);
-    void binOperations(QPushButton *button);
-    void unOperations(QPushButton *button);
+
 
     template<typename PtrSlot>
     QPushButton *createButton(const QString &text, const PtrSlot &slot)
