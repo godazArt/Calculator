@@ -241,9 +241,9 @@ void CalculatorMainWindow::unOperations(QPushButton *button)
         break;
     default:
         if(button->text() == "√")
-        {
-            isUnOpPrev = true;
+        {            
             funcSqrt();
+            isUnOpPrev = true;
         }
         break;
     }
@@ -251,6 +251,7 @@ void CalculatorMainWindow::unOperations(QPushButton *button)
 
 void CalculatorMainWindow::funcSqrt()
 {
+    unOpCleaner();
     histDisplay->insert("√(" + display->text() +')');
     nums.top() = sqrt(display->text().toDouble());
     display->clear();
