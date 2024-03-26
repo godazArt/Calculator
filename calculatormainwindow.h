@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QObject>
 #include <vector>
+#include <map>
 #include <stack>
 
 class QSignalMapper;
@@ -30,7 +31,10 @@ private:
         binOp = 1,
         unOp = 2
     };
+    std::map<QString,void (CalculatorMainWindow::*)(QObject*)> engineFuncs;
+    std::map<QString,void (CalculatorMainWindow::*)(QObject*)> drawingFuncs;
     std::vector< void (CalculatorMainWindow::*)(QPushButton*)> funcs;
+    std::vector< void (CalculatorMainWindow::*)(QPushButton*)> drawFuncs;
     std::stack<double> nums;
     int numOfDigits;
     int degree;
@@ -44,19 +48,26 @@ private:
     void funcErase();
     void funcClear();    
     void clearSteck();
-    void unOpCleaner();
+    void unOpCleaner();    
     void placeWidgets();
     void standartVals();
     void funcPlusMinus();
     void configButtons();
     void createWidgets();
     void createButtons();
+    void engineMapCongig();
+    void drawingMapCongig();
     void digitFunc(int num, int temp);
     void digitAnalys(QPushButton *button);
     void solveExample(QPushButton *button);
     void unOperations(QPushButton *button);
     void moveToNextNum(QPushButton *button);
     void binOperations(QPushButton *button);
+
+    void binOperationsDraw(QPushButton *button);
+    void unOperationsDraw(QPushButton *button);
+    void digitsDraw(QPushButton *button);
+
     void dotDigitFunc(double num, int temp);
 
     double op_plus();
@@ -74,6 +85,7 @@ private:
         Button->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
         return Button;
     }
+
     std::vector<QPushButton*> numButtons;
     QPushButton *pushButtonPlusMinus;
     QPushButton *pushButtonDevot;

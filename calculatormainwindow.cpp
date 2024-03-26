@@ -15,11 +15,17 @@ CalculatorMainWindow::CalculatorMainWindow(QWidget *parent)
     isButtonPressed = true;
     nums.push(0);
     standartVals();
+    operation_ptr = nullptr;
     resize(300,400);
     numOfDigits = 10;
+
     funcs.push_back(&CalculatorMainWindow::digitAnalys);
     funcs.push_back(&CalculatorMainWindow::binOperations);
     funcs.push_back(&CalculatorMainWindow::unOperations);
+
+    drawFuncs.push_back(&CalculatorMainWindow::digitsDraw);
+    drawFuncs.push_back(&CalculatorMainWindow::binOperationsDraw);
+    drawFuncs.push_back(&CalculatorMainWindow::unOperationsDraw);
     setWindowTitle("Simple Calculator");
     createWidgets();
 }
@@ -28,7 +34,6 @@ void CalculatorMainWindow::standartVals()
 {
     degree = 10;
     dotPressed = false;
-    operation_ptr = nullptr;
 }
 
 void CalculatorMainWindow::unOpCleaner()
@@ -46,6 +51,7 @@ void CalculatorMainWindow::createButtons()
 {
     for (int i = 0; i < numOfDigits; ++i)
         numButtons.push_back(createButton(QString::number(i), &CalculatorMainWindow::slotEngine));
+
     pushButtonPlus = createButton("+", &CalculatorMainWindow::slotEngine);
     pushButtonMult = createButton("*", &CalculatorMainWindow::slotEngine);
     pushButtonDevot = createButton("/", &CalculatorMainWindow::slotEngine);
@@ -78,9 +84,11 @@ void CalculatorMainWindow::placeWidgets()
     histDisplay->setFixedHeight(35);
     lCalcLayout->addWidget ( histDisplay , 0 , 0 , 1 , 4 ) ;
     lCalcLayout->addWidget ( numButtons[0] , 6 , 1 ) ;
+
     for (int i = 1 ; i < numOfDigits; i += 3)
         for(int j = 0; j < 3; ++j)
             lCalcLayout->addWidget(numButtons[i + j], (i / 3) + 3, j);
+
     lCalcLayout->addWidget ( pushButtonSqrt , 2 , 0  ) ;
     lCalcLayout->addWidget ( pushButtonC , 2 , 1 ) ;
     lCalcLayout->addWidget ( pushButtonErase , 2 , 2  ) ;
@@ -105,6 +113,7 @@ void CalculatorMainWindow::configButtons()
 {
     for (int i = 0; i < numOfDigits; ++i)
         numButtons[i]->setObjectName(QString::number(objectNames::digits));
+
     pushButtonPlus->setObjectName(QString::number(objectNames::binOp));
     pushButtonMult->setObjectName(QString::number(objectNames::binOp));
     pushButtonDevot->setObjectName(QString::number(objectNames::binOp));
@@ -121,35 +130,10 @@ void CalculatorMainWindow::slotEngine()
 {
     QPushButton * button = qobject_cast<QPushButton *>(sender());
     (this->*(funcs[button->objectName().toInt()]))(button);
+    (this->*(drawFuncs[button->objectName().toInt()]))(button);
 }
 
-void CalculatorMainWindow::digitFunc(int num, int temp)
-{
-    nums.top() = ((nums.top() * temp) * 10 + num) * temp;
-}
-
-void CalculatorMainWindow::dotDigitFunc(double num, int temp)
-{
-    nums.top() = ((nums.top() * temp) + num / degree)* temp;
-    degree *=10;
-}
-
-void CalculatorMainWindow::digitAnalys(QPushButton *button)
-{
-    unOpCleaner();
-    isButtonPressed = true;
-    int temp = 1;
-    if(nums.top() < 0)
-        temp = -1;
-    if(dotPressed)
-        dotDigitFunc(button->text().toInt(),temp);
-    else
-        digitFunc(button->text().toInt(), temp);
-    display->clear();
-    display->insert(QString::number(nums.top()));
-}
-
-void CalculatorMainWindow::solveExample(QPushButton *button)
+void CalculatorMainWindow::binOperationsDraw(QPushButton *button)
 {
     if(!isButtonPressed)
     {
@@ -170,39 +154,94 @@ void CalculatorMainWindow::solveExample(QPushButton *button)
             else
                 histDisplay->insert('(' + display->text() + ')' + button->text());
         }
-        nums.push((this->*operation_ptr)());
         display->clear();
         display->insert(QString::number(nums.top()));
         nums.push(0);
         standartVals();
+        isButtonPressed = false;
     }
 }
 
-void CalculatorMainWindow::moveToNextNum(QPushButton *button)
+void CalculatorMainWindow::digitsDraw(QPushButton *button)
 {
-    if(isUnOpPrev)
-    {
-        histDisplay->insert(button->text());
-        isUnOpPrev = false;
+    unOpCleaner();
+    display->clear();
+    display->insert(QString::number(nums.top()));
+}
+
+void CalculatorMainWindow::unOperationsDraw(QPushButton *button)
+{
+    switch (button->text().toStdString()[0]) {
+    case 'C':
+        display->clear();
+        histDisplay->clear();
+        display->insert("0");
+        break;
+    case '=':
+        display->clear();
+        histDisplay->clear();
+        display->insert(QString::number(nums.top()));
+        histDisplay->insert(QString::number(nums.top()));
+        isUnOpPrev = true;
+        break;
+    case '<':
+            unOpCleaner();
+            display->clear();
+            display->insert(QString::number(nums.top()));
+        break;
+    case '+':
+        display->clear();
+        display->insert(QString::number(nums.top()));
+        break;
+    default:
+        if(button->text() == "√")
+        {
+            if(isUnOpPrev)
+                histDisplay->clear();
+            histDisplay->insert("√(" + display->text() +')');
+            display->clear();
+            display->insert(QString::number(nums.top()));
+            unOpCleaner();
+            isUnOpPrev = true;
+        }
+        break;
     }
+}
+
+void CalculatorMainWindow::digitFunc(int num, int temp)
+{
+    nums.top() = ((nums.top() * temp) * 10 + num) * temp;
+}
+
+void CalculatorMainWindow::dotDigitFunc(double num, int temp)
+{
+    nums.top() = ((nums.top() * temp) + num / degree)* temp;
+    degree *=10;
+}
+
+void CalculatorMainWindow::digitAnalys(QPushButton *button)
+{    
+    isButtonPressed = true;
+    int temp = 1;
+    if(nums.top() < 0)
+        temp = -1;
+    if(dotPressed)
+        dotDigitFunc(button->text().toInt(),temp);
     else
-    {
-        if(nums.top() >= 0)
-            histDisplay->insert(display->text() + button->text());
-        else
-            histDisplay->insert('(' + display->text() + ')' + button->text());
-    }
-    isButtonPressed = false;
-    nums.push(0);
-    standartVals();
+        digitFunc(button->text().toInt(), temp);
 }
 
 void CalculatorMainWindow::binOperations(QPushButton *button)
 {    
-    if(nums.size() == 2)    
-        solveExample(button);
-    else if(nums.size() == 1)    
-        moveToNextNum(button);
+    if(nums.size() == 2)
+    {
+        if(isButtonPressed)
+        {
+            double temp = (this->*operation_ptr)();
+            nums.push(temp);
+        }
+    }
+    //else if(nums.size() == 1)
 
 
     switch (button->text().toStdString()[0]) {
@@ -240,45 +279,33 @@ void CalculatorMainWindow::unOperations(QPushButton *button)
         dotPressed = true;
         break;
     default:
-        if(button->text() == "√")
-        {            
+        if(button->text() == "√")        
             funcSqrt();
-            isUnOpPrev = true;
-        }
         break;
     }
 }
 
 void CalculatorMainWindow::funcSqrt()
 {
-    unOpCleaner();
-    histDisplay->insert("√(" + display->text() +')');
-    nums.top() = sqrt(display->text().toDouble());
-    display->clear();
-    display->insert(QString::number(nums.top()));
+    nums.top() = sqrt(display->text().toDouble());    
 }
 
 void CalculatorMainWindow::funcPlusMinus()
 {
     nums.top() = -1 * display->text().toDouble();
-    display->clear();
-    display->insert(QString::number(nums.top()));
 }
 
 void CalculatorMainWindow::funcClear()
-{
-    display->clear();
-    histDisplay->clear();
-    display->insert("0");
+{    
     nums = std::stack<double>();
     nums.push(0);
     standartVals();
+    operation_ptr = nullptr;
 }
 
 void CalculatorMainWindow::funcErase()
 {
     int tempNum;
-    unOpCleaner();
     if(dotPressed)
     {
         tempNum = nums.top() * degree / 100;
@@ -290,8 +317,6 @@ void CalculatorMainWindow::funcErase()
         tempNum = nums.top() / 10;
         nums.top() = tempNum;
     }
-    display->clear();
-    display->insert(QString::number(nums.top()));
 }
 
 void CalculatorMainWindow::funcEqual()
@@ -299,12 +324,8 @@ void CalculatorMainWindow::funcEqual()
     if(operation_ptr == nullptr)
         return;
     nums.push((this->*operation_ptr)());
-    display->clear();
-    histDisplay->clear();
-    display->insert(QString::number(nums.top()));
-    histDisplay->insert(QString::number(nums.top()));
-    isUnOpPrev = true;
     standartVals();
+    operation_ptr = nullptr;
 }
 
 double CalculatorMainWindow::op_plus()
