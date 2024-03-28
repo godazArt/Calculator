@@ -25,48 +25,59 @@ public:
 private slots:
     void slotEngine();
 private:
-    enum objectNames
-    {
-        digits = 0,
-        binOp = 1,
-        unOp = 2
-    };
-    std::map<QString,void (CalculatorMainWindow::*)(QObject*)> engineFuncs;
-    std::map<QString,void (CalculatorMainWindow::*)(QObject*)> drawingFuncs;
-    std::vector< void (CalculatorMainWindow::*)(QPushButton*)> funcs;
-    std::vector< void (CalculatorMainWindow::*)(QPushButton*)> drawFuncs;
+
+    QString state;
+    std::map<QString,QString> operations;
+    std::map<QString,void (CalculatorMainWindow::*)()> engineFuncs;
+    std::map<QString,void (CalculatorMainWindow::*)()> drawingFuncs;
+
     std::stack<double> nums;
+
     int numOfDigits;
     int degree;
     bool zeros;
     bool isUnOpPrev;
+    bool dotFlag;
     bool dotPressed;
     bool isButtonPressed;
 
+    void isNeedSolv();
+    void funcPlus();
+    void funcMinus();
+    void funcMult();
+    void funcDevot();
+    void funcDot();
     void funcSqrt();
     void funcEqual();
     void funcErase();
-    void funcClear();    
+    void funcClear();
+
+    void drawFuncDot();
+    void drawFuncSqrt();
+    void drawFuncEqual();
+    void drawFuncErase();
+    void drawFuncClear();
+    void drawFuncPlusMinus();
+
     void clearSteck();
+    void configVals();
     void unOpCleaner();    
     void placeWidgets();
     void standartVals();
     void funcPlusMinus();
     void configButtons();
+    void configOperations();
     void createWidgets();
     void createButtons();
     void engineMapCongig();
     void drawingMapCongig();
     void digitFunc(int num, int temp);
-    void digitAnalys(QPushButton *button);
+    void digitAnalys();
     void solveExample(QPushButton *button);
-    void unOperations(QPushButton *button);
     void moveToNextNum(QPushButton *button);
-    void binOperations(QPushButton *button);
 
-    void binOperationsDraw(QPushButton *button);
-    void unOperationsDraw(QPushButton *button);
-    void digitsDraw(QPushButton *button);
+    void binOperationsDraw();
+    void digitsDraw();
 
     void dotDigitFunc(double num, int temp);
 
